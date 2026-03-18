@@ -1,0 +1,101 @@
+package model;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class Livro {
+	
+	private int codigo;
+	private String nome;
+	private String lingua;
+	private int ano;
+}
+
+package model;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class Autor{
+	
+	private int id_autor;
+	private String nome;
+	private LocalDate data_nasc;
+	private String pais_nasc;
+	private String biografia;
+}
+
+package persistence;
+
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+
+public class GenericDao {
+
+	private Connection c;
+
+	public Connection getConnection() throws ClassNotFoundException, SQLException {
+
+		String hostName = "localhost";
+		String dbName = "Livro_Autor_Mvn";
+		String user = "sa";
+		String senha = "fatec123";
+		Class.forName("net.sourceforge.jtds.jdbc.Driver");
+		c = DriverManager.getConnection(String.format(
+				"jdbc:jtds:sqlserver://%s:1433;"
+				+ "databaseName=%s;user=%s;password=%s;", 
+				hostName, dbName, user, senha));
+
+		return c;
+	}
+
+}
+
+package persistence;
+
+import java.sql.SQLException;
+import java.util.List;
+
+public interface ICrud<T> {
+
+	public List<T> listar() throws SQLException, ClassNotFoundException;
+	public String inserir(T t) throws SQLException, ClassNotFoundException;
+	public String atualizar(T t) throws SQLException, ClassNotFoundException;
+	public String excluir(T t) throws SQLException, ClassNotFoundException;
+}
+
+package persistence;
+
+public class LivroDao implements ICrud<Livro> {
+	
+	private GenericDao gDao;
+	
+	public LivroDao(GenericDao gDao) {
+		this.gdao = gdao;
+	}
+
+	@Override
+	public Livro buscar(Livro livro) throws SQLException, ClassNotFoundException;
+		Connection c = gDao.getConnection();
+		String sql = "SELECT codigo, nome, lingua, ano FROM livro WHERE codigo = ?";
+		PreparedStatment ps = c.prepareStatment(sql);
+		ps.setInt(1, livro.getCodigo());
+		ResultSet rs = ps.excuteQuerry();
+		if (rs.next()) {
+			livro.setCodigo(rs.getInt("codigo"));
+			livro.setNome(rs.getString("nome"));
+			livro.setlingua(rs.getString("lingua));
+			livro.setAno(rs.getInt("ano"));
+		}
+		rs.close;
+		ps.close;
+		return livro;
+	}
+
+	@Override
+	public List<livro> listar() throws SQLException, ClassNotFoundException {
+		List<livro> livros = new ArrayList<>();
+		Connection c = gDao.getConnection();
+
+	
